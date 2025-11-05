@@ -17,28 +17,28 @@ import { ErrorMessage } from '@/components/error-message';
 import { DestructiveConfirmationDialog } from '@/components/confirmation-dialog';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 
-import { useProject, useProjectPermissions, useAddProjectPermission, useRemoveProjectPermission } from '@/services/queries';
+import { useProjectPermissions, useAddProjectPermission, useRemoveProjectPermission } from '@/services/queries';
 import { successToast, errorToast } from '@/hooks/use-toast';
 import type { PermissionRole, SubjectType } from '@/types/project';
 
 const ROLE_DEFINITIONS = {
   view: {
     label: 'View',
-    description: 'Can see sessions and duplicate to their own project',
+    description: 'Can see sessions and duplicate to their own workspace',
     permissions: ['sessions:read', 'sessions:duplicate'] as const,
     color: 'bg-blue-100 text-blue-800',
     icon: Eye,
   },
   edit: {
     label: 'Edit',
-    description: 'Can create sessions in the project',
+    description: 'Can create sessions in the workspace',
     permissions: ['sessions:read', 'sessions:create', 'sessions:duplicate'] as const,
     color: 'bg-green-100 text-green-800',
     icon: Edit,
   },
   admin: {
     label: 'Admin',
-    description: 'Full project management access',
+    description: 'Full workspace management access',
     permissions: ['*'] as const,
     color: 'bg-purple-100 text-purple-800',
     icon: Shield,
@@ -56,7 +56,6 @@ export default function PermissionsPage() {
   const projectName = params?.name as string;
 
   // React Query hooks replace all manual state management
-  const { data: project } = useProject(projectName);
   const { data: permissions = [], isLoading, error, refetch } = useProjectPermissions(projectName);
   const addPermissionMutation = useAddProjectPermission();
   const removePermissionMutation = useRemoveProjectPermission();
@@ -86,7 +85,7 @@ export default function PermissionsPage() {
 
     const key = `${grantForm.subjectType}:${grantForm.subjectName}`.toLowerCase();
     if (permissions.some((i) => `${i.subjectType}:${i.subjectName}`.toLowerCase() === key)) {
-      setGrantError('This subject already has access to the project');
+      setGrantError('This subject already has access to the workspace');
       return;
     }
 
@@ -168,15 +167,15 @@ export default function PermissionsPage() {
     <div className="container mx-auto p-6">
       <Breadcrumbs
         items={[
-          { label: 'Projects', href: '/projects' },
+          { label: 'Workspaces', href: '/projects' },
           { label: projectName, href: `/projects/${projectName}` },
-          { label: 'Permissions' },
+          { label: 'Sharing' },
         ]}
         className="mb-4"
       />
       <ProjectSubpageHeader
-        title={<>Permissions</>}
-        description={<>Manage user and group access for {project?.displayName || projectName}</>}
+        title={<>Sharing</>}
+        description={<>Users and groups with access to this workspace and their roles</>}
         actions={
           <>
             <Button variant="outline" onClick={() => refetch()} disabled={isLoading}>
@@ -223,9 +222,9 @@ export default function PermissionsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
-            Permissions
+            Sharing
           </CardTitle>
-          <CardDescription>Users and groups with access to this project and their roles</CardDescription>
+          <CardDescription>Users and groups with access to this workspace and their roles</CardDescription>
         </CardHeader>
         <CardContent>
           {permissions.length > 0 ? (
@@ -302,7 +301,7 @@ export default function PermissionsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Grant Permission</DialogTitle>
-            <DialogDescription>Add a user or group to this project with a role</DialogDescription>
+            <DialogDescription>Add a user or group to this workspace with a role</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -395,7 +394,7 @@ export default function PermissionsPage() {
         onOpenChange={setShowRevokeDialog}
         onConfirm={handleRevoke}
         title="Revoke Permission"
-        description={`Are you sure you want to revoke access for "${toRevoke?.subjectName}" (${toRevoke?.subjectType})? They will immediately lose access to this project.`}
+        description={`Are you sure you want to revoke access for "${toRevoke?.subjectName}" (${toRevoke?.subjectType})? They will immediately lose access to this workspace.`}
         confirmText="Revoke"
         loading={removePermissionMutation.isPending}
       />
